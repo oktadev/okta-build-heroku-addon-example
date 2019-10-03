@@ -1,7 +1,8 @@
 package com.okta.example.herokuaddon.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.okta.example.herokuaddon.model.HerokuProvisionRequest;
+import com.okta.example.herokuaddon.model.HerokuTokenResponse;
 import com.okta.example.herokuaddon.service.HerokuCommunicatorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,17 +43,17 @@ public class HerokuController {
 
     @PostMapping(RESOURCES_URI)
     public @ResponseBody Map<String, Object> provision(
-        @RequestBody Map<String, Object> request
+        @RequestBody HerokuProvisionRequest request
     ) throws IOException {
         log.info("Incoming Heroku request:\n{}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(request));
 
-        String code = ((String)((Map<String, Object>)request.get("oauth_grant")).get("code"));
-        Map<String, Object> tokenResponse = herokuCommunicatorService.exchangeCodeForTokens(code);
+        String code = request.getOauthGrant().getCode();
+        HerokuTokenResponse tokenResponse = herokuCommunicatorService.exchangeCodeForTokens(code);
 
         log.info("token response:\n{}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tokenResponse));
 
         return Map.of(
-            "id", request.get("uuid"),
+            "id", request.getUuid(),
             "message", "Your add-on is has been created and is available.",
             "config", Map.of("VAR1", "VAL1")
         );
