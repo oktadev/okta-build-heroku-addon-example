@@ -2,8 +2,8 @@ package com.okta.example.herokuaddon.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.okta.example.herokuaddon.model.HerokuProvisionRequest;
-import com.okta.example.herokuaddon.model.HerokuTokenResponse;
-import com.okta.example.herokuaddon.service.HerokuCommunicatorService;
+import com.okta.example.herokuaddon.model.HerokuProvisionResponse;
+import com.okta.example.herokuaddon.service.HerokuProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,30 +33,24 @@ public class HerokuController {
     static final String HEROKU_URI = "/heroku";
     static final String RESOURCES_URI = "/resources";
 
-    private HerokuCommunicatorService herokuCommunicatorService;
+    private HerokuProvisionService herokuProvisionService;
 
     private static final Logger log = LoggerFactory.getLogger(HerokuController.class);
 
-    public HerokuController(HerokuCommunicatorService herokuCommunicatorService) {
-        this.herokuCommunicatorService = herokuCommunicatorService;
+    public HerokuController(HerokuProvisionService herokuProvisionService) {
+        this.herokuProvisionService = herokuProvisionService;
     }
 
     @PostMapping(RESOURCES_URI)
-    public @ResponseBody Map<String, Object> provision(
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public @ResponseBody HerokuProvisionResponse provision(
         @RequestBody HerokuProvisionRequest request
-    ) throws IOException {
+    ) throws IOException, InterruptedException {
         log.info("Incoming Heroku request:\n{}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(request));
 
-        String code = request.getOauthGrant().getCode();
-        HerokuTokenResponse tokenResponse = herokuCommunicatorService.exchangeCodeForTokens(code);
+        herokuProvisionService.provision(request);
 
-        log.info("token response:\n{}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tokenResponse));
-
-        return Map.of(
-            "id", request.getUuid(),
-            "message", "Your add-on is has been created and is available.",
-            "config", Map.of("VAR1", "VAL1")
-        );
+        return new HerokuProvisionResponse(request.getUuid(), "Provisioning Okta Org");
     }
 
     @PutMapping(RESOURCES_URI + "/{resource_uuid}")
