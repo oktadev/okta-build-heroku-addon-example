@@ -13,4 +13,4 @@ It's a Spring Boot and Spring Security application that features:
 * ability to set environment variables for an application that uses this add-on
 * ability to indicate when provisioning is complete to Heroku
 
-This [screencast]() uses this code and demonstrates how to build a Heroku add-on from basic building blocks.
+This [screencast](https://youtu.be/zNiLa9ulBd4) uses this code and demonstrates how to build a Heroku add-on from basic building blocks.
